@@ -2,8 +2,8 @@ from PySide6.QtCore import QCoreApplication, QMetaObject, QRect, Qt, QSize, QThr
 from PySide6.QtGui import QFont, QIcon, QPixmap
 from PySide6.QtWidgets import QApplication, QLabel, QPushButton, QSizePolicy, QWidget, QFrame
 
-from client import Client
-from verify_server import get_local_ip
+from server.client import *
+from server.verify_server import get_local_ip
 
 
 # Подключение к серверу
