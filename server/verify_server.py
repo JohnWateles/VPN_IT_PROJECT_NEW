@@ -1,5 +1,7 @@
 import socket
 from threading import Thread
+import subprocess
+import os
 
 from database import DataBase
 from encryption import decrypt
@@ -54,6 +56,21 @@ class VerifyServer:
         VerifyServer.RUN = False
 
 
+def get_ping_from_server(server_ip: str) -> int:
+    file_name = "ping_help_file.txt"
+    return_value = None
+    with open(file_name, "w") as file:
+        subprocess.run(["ping", server_ip, "-n", "1"], stdout=file)
+    with open(file_name, "r") as file:
+        all_data = file.readlines()[-1]
+        all_data = all_data.split(" ")[-2]
+        return_value = all_data
+        if all_data == "(100%":
+            return_value = -1
+    os.remove(file_name)
+    return return_value
+
+
 def get_local_ip() -> str:
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     try:
@@ -71,5 +88,10 @@ def test_verify_server1():
     server.run()
 
 
+def test_ping_func():
+    ping = get_ping_from_server("185.121.232.144")
+    print(ping)
+
+
 if __name__ == "__main__":
-    test_verify_server1()
+    test_ping_func()
