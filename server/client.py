@@ -37,9 +37,5 @@ def main():
     print(answer)
 
 
-def print_hello_all():
-    print("Hello, niggs")
-
-
 if __name__ == "__main__":
     main()
