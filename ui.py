@@ -4,6 +4,7 @@ from PySide6.QtWidgets import QApplication, QLabel, QPushButton, QSizePolicy, QW
 
 from server.client import Client
 from server.verify_server import get_local_ip
+import _outline
 
 
 # Подключение к серверу
@@ -24,7 +25,9 @@ class ConnectionThread(QThread):
             if valid_key == "1":
                 print("Подключение...")
                 import time
-                time.sleep(3)  # Имитация подключения к VPN серверу
+                self.outline = _outline.start_outline()
+                time.sleep(1)
+                self.hwnd = _outline.connect_and_hide(self.outline)
                 success = True
             else:
                 print("Неверный ключ доступа!")
@@ -183,6 +186,13 @@ class MainWindowUI:
             self.current_status_connection = 1
 
         elif self.current_status_connection == 1:
+
+            # Отключение от Outline
+            import time
+            _outline.show_and_disconnect(self.connection_thread.hwnd)
+            time.sleep(0.5)
+            _outline.stop_outline(self.connection_thread.outline)
+
             self.current_status_connection = 0
             self.status_bar.setText(QCoreApplication.translate(
                 "MainWindow",

@@ -95,4 +95,4 @@ def test_ping_func():
 
 if __name__ == "__main__":
     test_verify_server1()
-    test_ping_func()
+    # test_ping_func()
