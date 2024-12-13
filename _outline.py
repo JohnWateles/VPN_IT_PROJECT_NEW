@@ -70,6 +70,7 @@ def connect_and_hide(outline):
     time.sleep(0.2)
     for i in range(4):
         pyautogui.press("tab")
+        time.sleep(0.05)
     pyautogui.press("enter")
     time.sleep(0.05)
     hide_window(windows[0])
@@ -78,6 +79,7 @@ def connect_and_hide(outline):
 
 def show_and_disconnect(hwnd):
     show_window(hwnd)
+    time.sleep(0.1)
     pyautogui.press("enter")
 
 
