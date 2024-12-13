@@ -1,54 +1,27 @@
 import pyautogui
 import psutil
 import subprocess
-import os
-import pygetwindow as gw
-from pywinauto import Application
 import time
-
 import ctypes
 import win32gui
 import win32con
 import win32process
-from ctypes.wintypes import HWND
 
 
-def get_outline_pid():
-    all_pids = list()
-    for proc in psutil.process_iter(['pid', 'name']):
-        if proc.info['name'] == 'Outline.exe':
-            print(proc)
-            all_pids.append(proc.pid)
-    print(all_pids)
-    return all_pids[2]
+def resize_window(hwnd, x, y, width=None, height=None):
+    if (width is None) or (height is None):
+        _, _, width, height = get_window_info(hwnd)
+    # Используем SetWindowPos для изменения размера и положения окна
+    win32gui.SetWindowPos(hwnd, 0, x, y, width, height, win32con.SWP_NOZORDER)
 
 
-def open_outline_window():
-    outline_path = r"C:\Program Files (x86)\Outline\Outline.exe"
-    for proc in psutil.process_iter(['pid', 'name']):
-        if proc.info['name'] == 'Outline.exe':
-            process = subprocess.Popen(outline_path)
-            return proc.pid
-    process = subprocess.Popen(outline_path)
-    return process.pid
-
-
-def close_outline_window(app):
-    app.window().minimize()
-
-
-def find_and_open_outline():
-    outline_path = r"C:\Program Files (x86)\Outline\Outline.exe"
-    app = Application(backend="uia").start(outline_path)
-    return app
-
-
-def click_on_button(path: str):
-    button_location = pyautogui.locateCenterOnScreen(path)
-    if button_location:
-        pyautogui.click(button_location)
-    else:
-        print("Кнопка не найдена.")
+def get_window_info(hwnd):
+    # Получаем прямоугольник окна относительно экрана
+    rect = win32gui.GetWindowRect(hwnd)
+    x, y, right, bottom = rect
+    width = right - x
+    height = bottom - y
+    return x, y, width, height
 
 
 def terminate_outline():
@@ -59,8 +32,6 @@ def terminate_outline():
 
 
 def start_outline():
-    # os.system(r"script.vbs")
-    # os.system(r"script.vbs")
     terminate_outline()
     outline_path = r"C:\Program Files (x86)\Outline\Outline.exe"
     process = subprocess.Popen(outline_path)
@@ -69,12 +40,6 @@ def start_outline():
 
 def stop_outline(outline):
     outline.terminate()
-
-
-def show_and_disconnect(hwnd):
-    show_window(hwnd)
-    time.sleep(0.2)
-    click_on_button("active_button_image.png")
 
 
 def hide_window(hwnd):
@@ -98,23 +63,33 @@ def get_windows_by_pid(pid):
 
 
 def connect_and_hide(outline):
-    pid = outline.pid
-    click_on_button("button_image.png")
-    windows = get_windows_by_pid(pid)
+    time.sleep(0.4)
+    windows = get_windows_by_pid(outline.pid)
+    hwnd = windows[0]
+    resize_window(hwnd, 10, 10, 10, 10)
+    time.sleep(0.2)
+    for i in range(4):
+        pyautogui.press("tab")
+    pyautogui.press("enter")
+    time.sleep(0.05)
     hide_window(windows[0])
     return windows[0]
 
 
-def main():
+def show_and_disconnect(hwnd):
+    show_window(hwnd)
+    pyautogui.press("enter")
+
+
+def test_new():
     outline = start_outline()
-    time.sleep(1)
     hwnd = connect_and_hide(outline)
-    time.sleep(7)
-    print("off")
+
+    time.sleep(5)
+
     show_and_disconnect(hwnd)
-    time.sleep(0.5)
     stop_outline(outline)
 
 
 if __name__ == "__main__":
-    main()
+    test_new()

@@ -25,9 +25,11 @@ class ConnectionThread(QThread):
             if valid_key == "1":
                 print("Подключение...")
                 import time
+
                 self.outline = _outline.start_outline()
-                time.sleep(1)
+                # time.sleep(0.5)
                 self.hwnd = _outline.connect_and_hide(self.outline)
+
                 success = True
             else:
                 print("Неверный ключ доступа!")
@@ -190,7 +192,7 @@ class MainWindowUI:
             # Отключение от Outline
             import time
             _outline.show_and_disconnect(self.connection_thread.hwnd)
-            time.sleep(0.5)
+            # time.sleep(0.5)
             _outline.stop_outline(self.connection_thread.outline)
 
             self.current_status_connection = 0
