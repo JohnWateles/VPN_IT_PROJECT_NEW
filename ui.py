@@ -2,8 +2,8 @@ from PySide6.QtCore import QCoreApplication, QMetaObject, QRect, Qt, QSize, QThr
 from PySide6.QtGui import QFont, QIcon, QPixmap
 from PySide6.QtWidgets import QApplication, QLabel, QPushButton, QSizePolicy, QWidget, QFrame
 
-from server.client import Client
-from server.verify_server import get_local_ip
+from client import Client
+from verify_server import get_local_ip, get_ping_from_server
 import _outline
 
 
@@ -19,7 +19,7 @@ class ConnectionThread(QThread):
             server_port = 12999
             client.connect_to_server(server_ip, server_port)
 
-            key = "key_261171_192.168.1.68:12673_ABCD"    # Ключ, вводимый пользователем в графическом интерфейсе
+            key = "key_261171_192.168.1.68:12673_ABCD"  # Ключ, вводимый пользователем в графическом интерфейсе
 
             valid_key = client.send_message(key)
             if valid_key == "1":
@@ -27,7 +27,7 @@ class ConnectionThread(QThread):
                 import time
 
                 self.outline = _outline.start_outline()
-                # time.sleep(0.5)
+                time.sleep(0.5)
                 self.hwnd = _outline.connect_and_hide(self.outline)
 
                 success = True
@@ -122,6 +122,23 @@ class MainWindowUI:
         self.status_bar.setStyleSheet("color: white;")
         self.status_bar.setAlignment(Qt.AlignCenter)
 
+        # Строка пинга
+        self.ping_label = QLabel(main_window)
+        self.ping_label.setObjectName("ping_label")
+        self.ping_label.setGeometry(QRect(
+            (main_window.width() - status_bar_width) // 2,
+            (main_window.height() - circle_button_size) // 2 +
+            circle_button_size + 80,
+            status_bar_width,
+            status_bar_height))
+        self.ping_label.setFont(font_status_bar)
+        self.ping_label.setStyleSheet("color: white;")
+        self.ping_label.setAlignment(Qt.AlignCenter)
+
+        self.ping_timer = QTimer()
+        self.ping_timer.timeout.connect(self.update_ping)
+        self.ping_timer.start(5000)  # обновление пинга каждые 30 секунд
+
         # Кнопка выбора сервера
         self.choise_server = QPushButton(main_window)
         self.choise_server.setObjectName("choise_server")
@@ -186,6 +203,7 @@ class MainWindowUI:
                 self.connection_finished)
             self.connection_thread.start()
             self.current_status_connection = 1
+            self.update_ping()
 
         elif self.current_status_connection == 1:
 
@@ -207,6 +225,7 @@ class MainWindowUI:
                 "border-style: solid;"
             )
             self.circle_frame.setStyleSheet(f"border-radius: {170 / 2}px;")
+            self.ping_label.setText("")
 
     def connection_finished(self, success):
         if success:
@@ -228,7 +247,7 @@ class MainWindowUI:
 
         self.opacity_step += speed
         opacity = min_opacity + (max_opacity - min_opacity) * \
-            abs((self.opacity_step % 2) - 1)
+                  abs((self.opacity_step % 2) - 1)
 
         self.circle_frame.setStyleSheet(
             f"""
@@ -236,3 +255,17 @@ class MainWindowUI:
             border-radius: {self.circle_frame.width() / 2}px;
             """
         )
+
+    def update_ping(self):
+        server_ip = "185.121.232.114"
+        ping_result = get_ping_from_server(server_ip)
+        print(ping_result)
+
+        if ping_result == -1:
+            ping_text = "Пинг: ошибка"
+        else:
+            ping_text = f"Пинг: {ping_result} мс"
+        if self.current_status_connection == 1:
+            self.ping_label.setText(ping_text)
+        else:
+            self.ping_label.setText("")
